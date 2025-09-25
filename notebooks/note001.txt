@@ -1,0 +1,11 @@
+                <div class="mt-6 text-gray-700 dark:text-gray-300 leading-relaxed">
+                    CheckPhish is a free real-time URL scanner providing deep threat intelligence,
+                    including screenshots, certificates, DOM Tree, and hosting details.
+                    Monitors 3000+ brands, flagging potential brand impersonation.
+                </div>
+
+                <div class="mt-4 text-sm">
+                    If you want to do more than one scan, automate a scan with
+                    <a href="#api" class="link link-primary">API</a> or use a proxy for scanning,
+                    please <a href="#signup" class="link link-secondary">signup</a> here!
+                </div>
