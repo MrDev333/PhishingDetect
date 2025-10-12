@@ -1,69 +1,219 @@
 {% extends "base.html" %}
+{% load socialaccount %}
 {% block title %}Email - Scan{% endblock %}
 {% load static %}
 {% block content %}
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-    * {
-        font-family: 'Inter', sans-serif;
-    }
+<head>
+    <!-- Added Quill.js rich text editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-    .gradient-bg {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
+        * {
+            font-family: 'Inter', sans-serif;
+        }
 
-    .fade-in {
-        animation: fadeIn 0.6s ease-in;
-    }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card {
             transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.5s ease-out forwards;
         }
 
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .result-card {
-        transform: translateY(20px);
-        opacity: 0;
-        animation: slideUp 0.5s ease-out forwards;
-    }
-
-    @keyframes slideUp {
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-
-    .pulse-animation {
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-
-        0%,
-        100% {
-            transform: scale(1);
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
-        50% {
-            transform: scale(1.05);
+        .pulse-animation {
+            animation: pulse 2s infinite;
         }
-    }
 
-    .glass-effect {
-        backdrop-filter: blur(10px);
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-</style>
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom scrollbar for Gmail inbox */
+        .gmail-inbox-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .gmail-inbox-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .gmail-inbox-scroll::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .gmail-inbox-scroll::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Gmail message hover effect */
+        .gmail-message-item {
+            transition: all 0.2s ease;
+        }
+
+        .gmail-message-item:hover {
+            background: #f3f4f6;
+            transform: translateX(4px);
+        }
+
+        /* Updated Quill editor styling to light theme */
+        .quill-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: #ffffff;
+        }
+
+        .ql-toolbar.ql-snow {
+            border: 1px solid #e5e7eb;
+            border-bottom: none;
+            border-radius: 0.5rem 0.5rem 0 0;
+            background: #f9fafb;
+            padding: 12px;
+        }
+
+        .ql-container.ql-snow {
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            min-height: 320px;
+            font-size: 14px;
+            background: #ffffff;
+        }
+
+        .ql-editor {
+            min-height: 320px;
+            max-height: 500px;
+            overflow-y: auto;
+            color: #1f2937;
+        }
+
+        .ql-editor.ql-blank::before {
+            color: #9ca3af;
+            font-style: normal;
+        }
+
+        /* Quill toolbar button styling - light theme */
+        .ql-snow .ql-stroke {
+            stroke: #6b7280;
+        }
+
+        .ql-snow .ql-fill {
+            fill: #6b7280;
+        }
+
+        .ql-snow .ql-picker-label {
+            color: #6b7280;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker-label:hover,
+        .ql-toolbar.ql-snow button:hover {
+            color: #667eea;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker-label:hover .ql-stroke,
+        .ql-toolbar.ql-snow button:hover .ql-stroke {
+            stroke: #667eea;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker-label:hover .ql-fill,
+        .ql-toolbar.ql-snow button:hover .ql-fill {
+            fill: #667eea;
+        }
+
+        .ql-snow.ql-toolbar button.ql-active,
+        .ql-snow .ql-toolbar button.ql-active {
+            color: #667eea;
+        }
+
+        .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+        .ql-snow .ql-toolbar button.ql-active .ql-stroke {
+            stroke: #667eea;
+        }
+
+        .ql-snow.ql-toolbar button.ql-active .ql-fill,
+        .ql-snow .ql-toolbar button.ql-active .ql-fill {
+            fill: #667eea;
+        }
+
+        /* Custom scrollbar for Quill editor - light theme */
+        .ql-editor::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .ql-editor::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+
+        .ql-editor::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .ql-editor::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Added iframe preview mode styling for complex email display */
+        #emailPreview {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: #ffffff;
+            min-height: 400px;
+            width: 100%;
+        }
+
+        .mode-toggle-btn {
+            transition: all 0.2s ease;
+        }
+
+        .mode-toggle-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
 </head>
 
 <body class="min-h-screen bg-base-200">
@@ -101,267 +251,411 @@
             </div>
         </div>
     </section>
+
     <main class="container mx-auto px-4 py-12">
-        <div class="max-w-6xl mx-auto">
-            <!-- Scanner Url Href -->
+        <div class="max-w-[1600px] mx-auto">
+            <!-- Quick action button for URL scanner -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8 fade-in">
-                <a href="{% url 'url_scan' %}"
+                <a href="url-scanner.html"
                     class="btn btn-lg btn-outline btn-info glass-effect hover:scale-105 transition-transform">
-                    <i class="fas fa-link"></i></i></i></i>Kiểm tra Url
+                    <i class="fas fa-link mr-2"></i>Kiểm tra URL
                 </a>
             </div>
-            <!-- Scanner Input Card -->
-            <div class="card bg-base-100 shadow-2xl fade-in">
-                <div class="card-body">
-                    <h2 class="card-title text-2xl mb-4">
-                        <i class="fas fa-paste text-primary mr-2"></i>
-                        Dán nội dung email
-                    </h2>
-                    <p class="text-sm text-base-content/70 mb-4">
-                        Dán toàn bộ nội dung email hoặc header email vào đây để phân tích
-                    </p>
-                    <textarea id="emailContent" class="textarea textarea-bordered w-full h-64 focus:textarea-primary"
-                        placeholder="Dán nội dung email hoặc header email vào đây...&#10;&#10;Ví dụ:&#10;From: sender@example.com&#10;To: you@example.com&#10;Subject: Urgent: Verify your account&#10;&#10;Dear user,&#10;Your account will be suspended..."></textarea>
 
-                    <!-- Gmail Inbox Panel -->
-                    <div class="mt-6">
-                        <h3 class="font-semibold mb-2">Gmail Inbox</h3>
-                        <div id="gmail-inbox" style="max-height:320px; overflow:auto; border:1px solid #e5e7eb; padding:8px; border-radius:6px; background:#fff; color:#000;">
-                            <div id="gmail-loading">Đang tải hộp thư...</div>
-                            <ul id="gmail-list" style="list-style:none; padding:0; margin:0;"></ul>
-                            <div class="text-center mt-2"><button id="gmail-load-more" class="btn btn-sm btn-outline">Tải thêm</button></div>
+            <div class="grid lg:grid-cols-2 gap-6 mb-12">
+                <div class="card bg-base-100 shadow-2xl fade-in">
+                    <div class="card-body">
+                        <h2 class="card-title text-2xl mb-4">
+                            <i class="fas fa-paste text-primary mr-2"></i>
+                            Dán nội dung email
+                        </h2>
+                        <p class="text-sm text-base-content/70 mb-4">
+                            Dán toàn bộ nội dung email hoặc soạn email với định dạng, hình ảnh và liên kết
+                        </p>
+
+                        <!-- Added mode toggle buttons for Edit/Preview modes -->
+                        <div class="flex gap-2 mb-4">
+                            <button id="editModeBtn" class="mode-toggle-btn btn btn-sm btn-outline active">
+                                <i class="fas fa-edit mr-1"></i>Chế độ soạn thảo
+                            </button>
+                            <button id="previewModeBtn" class="mode-toggle-btn btn btn-sm btn-outline">
+                                <i class="fas fa-eye mr-1"></i>Chế độ xem trước
+                            </button>
                         </div>
-                        <div class="text-xs text-base-content/60 mt-2">Danh sách được lấy từ tài khoản Google đã kết nối. Nếu chưa kết nối, vui lòng đăng nhập bằng Google tại <a href="/accounts/google/login/">Connect Google</a>.</div>
+
+                        <!-- Replaced textarea with Quill rich text editor -->
+                        <div id="emailEditorContainer">
+                            <div id="emailEditor" class="quill-container"></div>
+                        </div>
+
+                        <!-- Added iframe for preview mode to display complex HTML emails -->
+                        <div id="emailPreviewContainer" style="display: none;">
+                            <iframe id="emailPreview" sandbox="allow-same-origin" title="Email Preview"></iframe>
+                        </div>
+
+                        <div class="card-actions justify-end mt-4">
+                            <button id="scanBtn" class="btn btn-primary btn-lg w-full">
+                                <i class="fas fa-search mr-2"></i>
+                                Quét Email
+                            </button>
+                        </div>
+                        <div class="text-xs text-base-content/60 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Nhấn Ctrl+Enter để quét nhanh • Hỗ trợ hình ảnh và liên kết
+                        </div>
                     </div>
-                    <div class="card-actions justify-end mt-4">
-                        <button id="scanBtn" class="btn btn-primary btn-lg">
-                            <i class="fas fa-search mr-2"></i>
-                            Quét Email
-                        </button>
-                    </div>
-                    <div class="text-xs text-base-content/60 mt-2">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Nhấn Ctrl+Enter để quét nhanh
+                </div>
+                <div class="card bg-base-100 shadow-2xl fade-in">
+                    <div class="card-body">
+                        <h2 class="card-title text-2xl mb-4">
+                            <i class="fab fa-google text-error mr-2"></i>
+                            Gmail Inbox
+                        </h2>
+                        <p class="text-sm text-base-content/70 mb-4">
+                            Chọn email từ hộp thư Gmail của bạn để phân tích nhanh
+                        </p>
+
+                        <div id="gmail-inbox"
+                            class="gmail-inbox-scroll border border-base-300 rounded-lg p-3 bg-base-50"
+                            style="height: 400px; overflow-y: auto;">
+                            <div id="gmail-loading" class="flex items-center justify-center h-full">
+                                <div class="text-center">
+                                    <!-- <div class="loading loading-spinner loading-lg text-primary mb-2"></div> -->
+                                    <p class="text-sm text-base-content/70">Đang tải hộp thư...</p>
+                                </div>
+                            </div>
+                            <ul id="gmail-list" class="space-y-2"></ul>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button id="gmail-load-more" class="btn btn-sm btn-outline btn-primary"
+                                style="display: none;">
+                                <i class="fas fa-chevron-down mr-2"></i>Tải thêm
+                            </button>
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <i class="fas fa-info-circle"></i>
+                            <div class="text-xs">
+                                <p class="font-semibold mb-1">Kết nối Gmail</p>
+                                <p>Danh sách được lấy từ tài khoản Google đã kết nối. Nếu chưa kết nối, vui lòng
+                                    <a href="/accounts/google/login/" class="link link-primary font-semibold">đăng nhập
+                                        bằng Google</a>.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Info Card -->
-            <div class="card bg-base-100 shadow-2xl fade-in">
+            <div id="scanProgress" class="hidden mb-8">
+                <div class="card bg-blue-50 border-2 border-blue-200">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-lg">
+                                <i class="fas fa-spinner fa-spin mr-2 text-primary"></i>
+                                Đang phân tích email...
+                            </h3>
+                            <!-- <div class="loading loading-spinner loading-md text-primary"></div> -->
+                        </div>
+                        <progress class="progress progress-primary w-full mb-2" id="progressBar" value="0"
+                            max="100"></progress>
+                        <p class="text-sm text-gray-600" id="scanStatus">Khởi tạo phân tích...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="scanResults" class="hidden">
+                Results will be populated here by JavaScript
+            </div>
+
+            <div class="card bg-base-100 shadow-2xl mb-12 fade-in">
                 <div class="card-body">
                     <h2 class="card-title text-2xl mb-4">
                         <i class="fas fa-shield-alt text-success mr-2"></i>
                         Chúng tôi kiểm tra
                     </h2>
-                    <ul class="space-y-4">
-                        <li class="flex items-start gap-3">
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="flex items-start gap-3">
                             <i class="fas fa-check-circle text-success text-xl mt-1"></i>
                             <div>
                                 <h4 class="font-semibold">Liên kết độc hại</h4>
-                                <p class="text-sm text-base-content/70">Phát hiện URL phishing và malware trong
-                                    email</p>
+                                <p class="text-sm text-base-content/70">Phát hiện URL phishing và malware trong email
+                                </p>
                             </div>
-                        </li>
-                        <li class="flex items-start gap-3">
+                        </div>
+                        <div class="flex items-start gap-3">
                             <i class="fas fa-check-circle text-success text-xl mt-1"></i>
                             <div>
                                 <h4 class="font-semibold">Header giả mạo</h4>
                                 <p class="text-sm text-base-content/70">Xác thực người gửi và phát hiện spoofing</p>
                             </div>
-                        </li>
-                        <li class="flex items-start gap-3">
+                        </div>
+                        <div class="flex items-start gap-3">
                             <i class="fas fa-check-circle text-success text-xl mt-1"></i>
                             <div>
                                 <h4 class="font-semibold">Social Engineering</h4>
                                 <p class="text-sm text-base-content/70">Nhận diện kỹ thuật thao túng tâm lý</p>
                             </div>
-                        </li>
-                        <li class="flex items-start gap-3">
+                        </div>
+                        <div class="flex items-start gap-3">
                             <i class="fas fa-check-circle text-success text-xl mt-1"></i>
                             <div>
                                 <h4 class="font-semibold">Tệp đính kèm nguy hiểm</h4>
                                 <p class="text-sm text-base-content/70">Quét virus và malware trong attachments</p>
                             </div>
-                        </li>
-                        <li class="flex items-start gap-3">
+                        </div>
+                        <div class="flex items-start gap-3">
                             <i class="fas fa-check-circle text-success text-xl mt-1"></i>
                             <div>
                                 <h4 class="font-semibold">Mẫu phishing phổ biến</h4>
                                 <p class="text-sm text-base-content/70">So sánh với database phishing toàn cầu</p>
                             </div>
-                        </li>
-                    </ul>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-success text-xl mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold">AI Content Analysis</h4>
+                                <p class="text-sm text-base-content/70">Machine Learning phân tích nội dung email</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Scan Progress -->
-        <div id="scanProgress" class="hidden mb-8">
-            <div class="card bg-blue-50 border-2 border-blue-200">
+            <div class="grid md:grid-cols-3 gap-6 mt-12 fade-in">
+                <div class="card border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-secret text-4xl text-red-600 mb-4"></i>
+                        <h3 class="card-title justify-center text-lg">Sender Verification</h3>
+                        <p class="text-sm text-base-content/70">
+                            Xác thực danh tính người gửi và phát hiện email giả mạo
+                        </p>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <i class="fas fa-link text-4xl text-orange-600 mb-4"></i>
+                        <h3 class="card-title justify-center text-lg">Link Analysis</h3>
+                        <p class="text-sm text-base-content/70">
+                            Phân tích tất cả liên kết trong email để phát hiện mối đe dọa
+                        </p>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-alt text-4xl text-yellow-600 mb-4"></i>
+                        <h3 class="card-title justify-center text-lg">Content Analysis</h3>
+                        <p class="text-sm text-base-content/70">
+                            AI phân tích nội dung để phát hiện các mẫu lừa đảo
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl mt-12 fade-in">
                 <div class="card-body">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-semibold text-lg">
-                            <i class="fas fa-spinner fa-spin mr-2 text-primary"></i>
-                            Đang phân tích email...
-                        </h3>
-                        <div class="loading loading-spinner loading-md text-primary"></div>
-                    </div>
-                    <progress class="progress progress-primary w-full mb-2" id="progressBar" value="0"
-                        max="100"></progress>
-                    <p class="text-sm text-gray-600" id="scanStatus">Khởi tạo phân tích...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Scan Results -->
-        <div id="scanResults" class="hidden">
-            Results will be populated here by JavaScript
-        </div>
-
-        <!-- Features Grid -->
-        <div class="grid md:grid-cols-3 gap-6 mt-12 fade-in">
-            <div class="card from-red-50 to-red-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div class="card-body text-center">
-                    <i class="fas fa-user-secret text-4xl text-red-600 mb-4"></i>
-                    <h3 class="card-title justify-center text-lg">Sender Verification</h3>
-                    <p class="text-sm text-base-content/70">
-                        Xác thực danh tính người gửi và phát hiện email giả mạo
-                    </p>
-                </div>
-            </div>
-            <div
-                class="card from-orange-50 to-orange-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div class="card-body text-center">
-                    <i class="fas fa-link text-4xl text-orange-600 mb-4"></i>
-                    <h3 class="card-title justify-center text-lg">Link Analysis</h3>
-                    <p class="text-sm text-base-content/70">
-                        Phân tích tất cả liên kết trong email để phát hiện mối đe dọa
-                    </p>
-                </div>
-            </div>
-            <div
-                class="card from-yellow-50 to-yellow-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div class="card-body text-center">
-                    <i class="fas fa-file-alt text-4xl text-yellow-600 mb-4"></i>
-                    <h3 class="card-title justify-center text-lg">Content Analysis</h3>
-                    <p class="text-sm text-base-content/70">
-                        AI phân tích nội dung để phát hiện các mẫu lừa đảo
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Info Section -->
-        <div class="card bg-base-100 shadow-xl mt-12 fade-in">
-            <div class="card-body">
-                <h3 class="card-title text-2xl mb-4">
-                    <i class="fas fa-info-circle text-info mr-2"></i>
-                    Email Scanner hoạt động như thế nào?
-                </h3>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="font-bold mb-2 flex items-center">
-                            <i class="fas fa-envelope-open text-primary mr-2"></i>
-                            Phân tích header
-                        </h4>
-                        <p class="text-sm text-base-content/70 mb-4">
-                            Kiểm tra thông tin người gửi, đường đi của email, SPF, DKIM, DMARC
-                            để xác thực tính hợp lệ và phát hiện giả mạo.
-                        </p>
-                        <h4 class="font-bold mb-2 flex items-center">
-                            <i class="fas fa-brain text-success mr-2"></i>
-                            AI Content Analysis
-                        </h4>
-                        <p class="text-sm text-base-content/70">
-                            Machine Learning phân tích ngôn ngữ, cấu trúc câu, và các dấu hiệu
-                            social engineering để phát hiện email lừa đảo.
-                        </p>
-                    </div>
-                    <div>
-                        <h4 class="font-bold mb-2 flex items-center">
-                            <i class="fas fa-link text-warning mr-2"></i>
-                            Link Scanning
-                        </h4>
-                        <p class="text-sm text-base-content/70 mb-4">
-                            Tất cả liên kết trong email được quét qua database phishing toàn cầu
-                            và kiểm tra real-time để phát hiện mối đe dọa.
-                        </p>
-                        <h4 class="font-bold mb-2 flex items-center">
-                            <i class="fas fa-paperclip text-error mr-2"></i>
-                            Attachment Check
-                        </h4>
-                        <p class="text-sm text-base-content/70">
-                            Phân tích tệp đính kèm để phát hiện malware, virus, và các loại
-                            tệp nguy hiểm có thể gây hại cho hệ thống.
-                        </p>
+                    <h3 class="card-title text-2xl mb-4">
+                        <i class="fas fa-info-circle text-info mr-2"></i>
+                        Email Scanner hoạt động như thế nào?
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-bold mb-2 flex items-center">
+                                <i class="fas fa-envelope-open text-primary mr-2"></i>
+                                Phân tích header
+                            </h4>
+                            <p class="text-sm text-base-content/70 mb-4">
+                                Kiểm tra thông tin người gửi, đường đi của email, SPF, DKIM, DMARC
+                                để xác thực tính hợp lệ và phát hiện giả mạo.
+                            </p>
+                            <h4 class="font-bold mb-2 flex items-center">
+                                <i class="fas fa-brain text-success mr-2"></i>
+                                AI Content Analysis
+                            </h4>
+                            <p class="text-sm text-base-content/70">
+                                Machine Learning phân tích ngôn ngữ, cấu trúc câu, và các dấu hiệu
+                                social engineering để phát hiện email lừa đảo.
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold mb-2 flex items-center">
+                                <i class="fas fa-link text-warning mr-2"></i>
+                                Link Scanning
+                            </h4>
+                            <p class="text-sm text-base-content/70 mb-4">
+                                Tất cả liên kết trong email được quét qua database phishing toàn cầu
+                                và kiểm tra real-time để phát hiện mối đe dọa.
+                            </p>
+                            <h4 class="font-bold mb-2 flex items-center">
+                                <i class="fas fa-paperclip text-error mr-2"></i>
+                                Attachment Check
+                            </h4>
+                            <p class="text-sm text-base-content/70">
+                                Phân tích tệp đính kèm để phát hiện malware, virus, và các loại
+                                tệp nguy hiểm có thể gây hại cho hệ thống.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         </div>
     </main>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const emailContent = document.getElementById('emailContent');
+            if (typeof Quill === 'undefined') {
+                console.error('[v0] Quill library failed to load');
+                showAlert('Lỗi tải trình soạn thảo. Vui lòng tải lại trang.', 'error');
+                return;
+            }
+
+            const quill = new Quill('#emailEditor', {
+                theme: 'snow',
+                placeholder: 'Dán nội dung email hoặc soạn email với định dạng...\n\nVí dụ:\nFrom: sender@example.com\nTo: you@example.com\nSubject: Urgent: Verify your account\n\nDear user,\nYour account will be suspended...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            const editModeBtn = document.getElementById('editModeBtn');
+            const previewModeBtn = document.getElementById('previewModeBtn');
+            const emailEditorContainer = document.getElementById('emailEditorContainer');
+            const emailPreviewContainer = document.getElementById('emailPreviewContainer');
+            const emailPreview = document.getElementById('emailPreview');
+            let currentMode = 'edit';
+            let currentEmailHtml = '';
+
+            editModeBtn.addEventListener('click', function () {
+                currentMode = 'edit';
+                editModeBtn.classList.add('active');
+                previewModeBtn.classList.remove('active');
+                emailEditorContainer.style.display = 'block';
+                emailPreviewContainer.style.display = 'none';
+            });
+
+            previewModeBtn.addEventListener('click', function () {
+                currentMode = 'preview';
+                previewModeBtn.classList.add('active');
+                editModeBtn.classList.remove('active');
+                emailEditorContainer.style.display = 'none';
+                emailPreviewContainer.style.display = 'block';
+
+                // Update preview with current content
+                if (currentEmailHtml) {
+                    updatePreview(currentEmailHtml);
+                } else {
+                    updatePreview(quill.root.innerHTML);
+                }
+            });
+
+            function updatePreview(htmlContent) {
+                const previewDoc = emailPreview.contentDocument || emailPreview.contentWindow.document;
+                previewDoc.open();
+                previewDoc.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    padding: 20px;
+                                    margin: 0;
+                                    background: white;
+                                    color: #333;
+                                }
+                                img { max-width: 100%; height: auto; }
+                                table { border-collapse: collapse; width: 100%; }
+                                a { color: #667eea; }
+                            </style>
+                        </head>
+                        <body>${htmlContent}</body>
+                        </html>
+                    `);
+                previewDoc.close();
+            }
+
             const scanBtn = document.getElementById('scanBtn');
             const scanProgress = document.getElementById('scanProgress');
             const scanResults = document.getElementById('scanResults');
             const progressBar = document.getElementById('progressBar');
             const scanStatus = document.getElementById('scanStatus');
 
-            // Ctrl+Enter support
-            emailContent.addEventListener('keydown', function (e) {
-                if (e.ctrlKey && e.key === 'Enter') {
-                    scanBtn.click();
-                }
+            quill.keyboard.addBinding({
+                key: 'Enter',
+                ctrlKey: true
+            }, function () {
+                scanBtn.click();
             });
 
-            // --- Gmail inbox integration ---
             const gmailList = document.getElementById('gmail-list');
             const gmailLoading = document.getElementById('gmail-loading');
             const gmailLoadMore = document.getElementById('gmail-load-more');
             let gmailNextPageToken = null;
-            const GMAIL_PAGE_SIZE = 25; // default per user request
+            const GMAIL_PAGE_SIZE = 25;
 
             function loadInbox(loadMore = false) {
                 if (!loadMore) {
                     gmailList.innerHTML = '';
                     gmailNextPageToken = null;
                 }
-                gmailLoading.style.display = 'block';
+                gmailLoading.style.display = 'flex';
+
+                // Mock Gmail API call - replace with actual Django endpoint
                 let url = `{% url 'gmail_inbox_api' %}` + `?maxResults=${GMAIL_PAGE_SIZE}`;
                 if (gmailNextPageToken) url += `&pageToken=${encodeURIComponent(gmailNextPageToken)}`;
+
                 fetch(url)
                     .then(r => r.json())
                     .then(data => {
                         gmailLoading.style.display = 'none';
                         if (data.error) {
-                            gmailList.innerHTML = `<li class="p-2 text-error">${data.error}</li>`;
+                            gmailList.innerHTML = `<li class="p-4 text-center text-error">${escapeHtml(data.error)}</li>`;
                             return;
                         }
                         (data.messages || []).forEach(msg => {
                             const li = document.createElement('li');
-                            li.className = 'p-2 border-b flex justify-between items-start';
+                            li.className = 'gmail-message-item p-3 border border-base-300 rounded-lg cursor-pointer bg-base-100';
                             li.innerHTML = `
-                                <div style="flex:1; margin-right:8px;">
-                                    <div class="font-semibold">${escapeHtml(msg.subject)}</div>
-                                    <div class="text-xs text-base-content/60">${escapeHtml(msg.from)}</div>
-                                    <div class="text-xs text-base-content/60 mt-1">${escapeHtml(msg.snippet)}</div>
-                                </div>
-                                <div style="white-space:nowrap;">
-                                    <button class="btn btn-sm btn-outline mr-2" data-id="${msg.id}" data-action="preview">Xem</button>
-                                    <button class="btn btn-sm btn-primary" data-id="${msg.id}" data-action="scan">Quét</button>
-                                </div>
-                            `;
+                                    <div class="flex justify-between items-start gap-2">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="font-semibold text-sm truncate">${escapeHtml(msg.subject)}</div>
+                                            <div class="text-xs text-base-content/60 truncate">${escapeHtml(msg.from)}</div>
+                                            <div class="text-xs text-base-content/50 mt-1 line-clamp-2">${escapeHtml(msg.snippet)}</div>
+                                        </div>
+                                        <div class="flex flex-col gap-1">
+                                            <button class="btn btn-xs btn-outline btn-info" data-id="${msg.id}" data-action="preview">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-primary" data-id="${msg.id}" data-action="scan">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
                             gmailList.appendChild(li);
                         });
                         gmailNextPageToken = data.nextPageToken || null;
-                        gmailLoadMore.style.display = gmailNextPageToken ? 'inline-block' : 'none';
+                        gmailLoadMore.style.display = gmailNextPageToken ? 'inline-flex' : 'none';
                     })
                     .catch(err => {
                         gmailLoading.style.display = 'none';
-                        gmailList.innerHTML = `<li class="p-2 text-error">Lỗi khi load inbox</li>`;
-                        console.error(err);
+                        gmailList.innerHTML = `                        <p>Chưa kết nối, vui lòng
+                            <a href="/accounts/google/login/" class="link link-primary font-semibold">đăng nhập
+                                bằng Google</a>.
+                        </p>`;
+                        console.error('[v0] Gmail inbox load error:', err);
                     });
             }
 
@@ -375,43 +669,85 @@
                 const id = btn.dataset.id;
                 const action = btn.dataset.action;
                 if (!id) return;
+
+                // Mock Gmail message API call - replace with actual Django endpoint
                 fetch(`{% url 'gmail_message_api' 'MSG_ID' %}`.replace('MSG_ID', encodeURIComponent(id)))
                     .then(r => r.json())
                     .then(data => {
-                        if (data.error) { alert(data.error); return; }
+                        if (data.error) {
+                            showAlert(data.error, 'error');
+                            return;
+                        }
                         const body = data.body || data.snippet || '';
-                        emailContent.value = body;
-                        emailContent.scrollIntoView({behavior:'smooth'});
-                        if (action === 'scan' && typeof performScan === 'function') {
-                            performScan(body);
+                        currentEmailHtml = body;
+
+                        const isComplexHtml = body.includes('<table') || body.includes('<style') ||
+                            body.includes('<!DOCTYPE') || body.length > 5000;
+
+                        if (isComplexHtml) {
+                            // Switch to preview mode for complex emails
+                            currentMode = 'preview';
+                            previewModeBtn.classList.add('active');
+                            editModeBtn.classList.remove('active');
+                            emailEditorContainer.style.display = 'none';
+                            emailPreviewContainer.style.display = 'block';
+                            updatePreview(body);
+                            showAlert('Email phức tạp đã được tải ở chế độ xem trước', 'info');
+                        } else {
+                            // Use Quill for simple emails
+                            quill.root.innerHTML = body;
+                            quill.focus();
+                        }
+
+                        quill.root.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                        if (action === 'scan') {
+                            setTimeout(() => performScan(body), 500);
+                        } else {
+                            showAlert('Email đã được tải vào trình soạn thảo', 'success');
                         }
                     })
-                    .catch(err => { console.error(err); alert('Không thể lấy nội dung email.'); });
+                    .catch(err => {
+                        console.error('[v0] Gmail message fetch error:', err);
+                        showAlert('Không thể lấy nội dung email. Vui lòng thử lại.', 'error');
+                    });
             });
 
-            // Utility escape
-            function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; }); }
+            function escapeHtml(s) {
+                return String(s || '').replace(/[&<>"']/g, function (m) {
+                    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+                });
+            }
 
-            // Load inbox on page load (may require user to be logged in with Google)
+            // Load inbox on page load
             loadInbox(false);
-            // --- end gmail integration ---
 
             // Scan button click handler
             scanBtn.addEventListener('click', function () {
-                const content = emailContent.value.trim();
+                let content, htmlContent;
 
-                if (!content) {
-                    showAlert('Vui lòng dán nội dung email cần phân tích!', 'warning');
-                    emailContent.focus();
+                if (currentMode === 'preview' && currentEmailHtml) {
+                    htmlContent = currentEmailHtml;
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = htmlContent;
+                    content = tempDiv.textContent || tempDiv.innerText || '';
+                } else {
+                    content = quill.getText().trim();
+                    htmlContent = quill.root.innerHTML;
+                }
+
+                if (!content || content.length < 10) {
+                    showAlert('Vui lòng nhập nội dung email cần phân tích!', 'warning');
+                    if (currentMode === 'edit') quill.focus();
                     return;
                 }
 
                 if (content.length < 50) {
-                    showAlert('Nội dung email quá ngắn. Vui lòng dán toàn bộ email hoặc header.', 'warning');
+                    showAlert('Nội dung email quá ngắn. Vui lòng nhập đầy đủ nội dung email.', 'warning');
                     return;
                 }
 
-                performScan(content);
+                performScan(htmlContent);
             });
 
             function performScan(content) {
@@ -455,7 +791,7 @@
                 scanBtn.innerHTML = '<i class="fas fa-search mr-2"></i>Quét Email';
 
                 // Generate mock results
-                const isSafe = Math.random() > 0.4; // 60% chance of being safe
+                const isSafe = Math.random() > 0.4;
                 const riskScore = isSafe ? Math.floor(Math.random() * 25) : Math.floor(Math.random() * 40 + 60);
                 const confidence = Math.floor(Math.random() * 15 + 85);
 
@@ -464,143 +800,145 @@
                 const resultText = isSafe ? 'Email an toàn' : 'Email nguy hiểm';
                 const resultDesc = isSafe ? 'Không phát hiện dấu hiệu lừa đảo' : 'Phát hiện dấu hiệu phishing';
 
-                // Extract sender from content (simple mock)
-                const senderMatch = content.match(/From:\s*(.+)/i);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = content;
+                const textContent = tempDiv.textContent || tempDiv.innerText || '';
+
+                const senderMatch = textContent.match(/From:\s*(.+)/i);
                 const sender = senderMatch ? senderMatch[1].trim() : 'Unknown sender';
 
-                const subjectMatch = content.match(/Subject:\s*(.+)/i);
+                const subjectMatch = textContent.match(/Subject:\s*(.+)/i);
                 const subject = subjectMatch ? subjectMatch[1].trim() : 'No subject';
 
                 scanResults.innerHTML = `
-                    <div class="result-card">
-                        <div class="alert alert-${resultClass} mb-6 shadow-lg">
-                            <i class="fas ${resultIcon} text-3xl"></i>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-xl">${resultText}</h3>
-                                <div class="text-sm mt-1">${resultDesc}</div>
-                                <div class="text-xs opacity-75 mt-2">
-                                    <i class="fas fa-envelope mr-1"></i>Từ: ${sender}
+                        <div class="result-card">
+                            <div class="alert alert-${resultClass} mb-6 shadow-lg">
+                                <i class="fas ${resultIcon} text-3xl"></i>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-xl">${resultText}</h3>
+                                    <div class="text-sm mt-1">${resultDesc}</div>
+                                    <div class="text-xs opacity-75 mt-2">
+                                        <i class="fas fa-envelope mr-1"></i>Từ: ${sender}
+                                    </div>
+                                </div>
+                                <div class="flex-none">
+                                    <div class="badge badge-lg badge-${resultClass}">${confidence}% tin cậy</div>
                                 </div>
                             </div>
-                            <div class="flex-none">
-                                <div class="badge badge-lg badge-${resultClass}">${confidence}% tin cậy</div>
+    
+                            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                                <div class="card bg-base-100 shadow-xl">
+                                    <div class="card-body">
+                                        <h3 class="card-title text-lg">
+                                            <i class="fas fa-info-circle text-primary mr-2"></i>
+                                            Thông tin email
+                                        </h3>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <span class="text-sm font-semibold">Người gửi:</span>
+                                                <p class="text-sm break-all">${sender}</p>
+                                            </div>
+                                            <div>
+                                                <span class="text-sm font-semibold">Tiêu đề:</span>
+                                                <p class="text-sm">${subject}</p>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm">Sender Verified:</span>
+                                                <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? 'Yes' : 'No'}</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm">SPF/DKIM:</span>
+                                                <span class="badge badge-${isSafe ? 'success' : 'warning'}">${isSafe ? 'Pass' : 'Fail'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <div class="card bg-base-100 shadow-xl">
+                                    <div class="card-body">
+                                        <h3 class="card-title text-lg">
+                                            <i class="fas fa-chart-pie text-info mr-2"></i>
+                                            Phân tích bảo mật
+                                        </h3>
+                                        <div class="space-y-3">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm">Risk Score:</span>
+                                                <span class="badge badge-${resultClass}">${riskScore}/100</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm">Phishing Indicators:</span>
+                                                <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '0' : Math.floor(Math.random() * 5 + 3)}</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm">Malicious Links:</span>
+                                                <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '0' : Math.floor(Math.random() * 3 + 1)}</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm">Scan Time:</span>
+                                                <span class="text-sm font-mono">${new Date().toLocaleTimeString('vi-VN')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="grid md:grid-cols-2 gap-6 mb-6">
-                            <div class="card bg-base-100 shadow-xl">
+    
+                            <div class="card bg-base-100 shadow-xl mb-6">
                                 <div class="card-body">
                                     <h3 class="card-title text-lg">
-                                        <i class="fas fa-info-circle text-primary mr-2"></i>
-                                        Thông tin email
+                                        <i class="fas fa-chart-bar text-warning mr-2"></i>
+                                        Phân tích chi tiết
                                     </h3>
-                                    <div class="space-y-3">
+                                    <div class="space-y-4">
                                         <div>
-                                            <span class="text-sm font-semibold">Người gửi:</span>
-                                            <p class="text-sm break-all">${sender}</p>
+                                            <div class="flex justify-between text-sm mb-2">
+                                                <span class="font-semibold">Phishing Risk</span>
+                                                <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '5%' : '85%'}</span>
+                                            </div>
+                                            <progress class="progress progress-${isSafe ? 'success' : 'error'} w-full" value="${isSafe ? 5 : 85}" max="100"></progress>
                                         </div>
                                         <div>
-                                            <span class="text-sm font-semibold">Tiêu đề:</span>
-                                            <p class="text-sm">${subject}</p>
+                                            <div class="flex justify-between text-sm mb-2">
+                                                <span class="font-semibold">Sender Authenticity</span>
+                                                <span class="badge badge-${isSafe ? 'success' : 'warning'}">${isSafe ? '95%' : '25%'}</span>
+                                            </div>
+                                            <progress class="progress progress-${isSafe ? 'success' : 'warning'} w-full" value="${isSafe ? 95 : 25}" max="100"></progress>
                                         </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm">Sender Verified:</span>
-                                            <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? 'Yes' : 'No'}</span>
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-2">
+                                                <span class="font-semibold">Content Safety</span>
+                                                <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '98%' : '15%'}</span>
+                                            </div>
+                                            <progress class="progress progress-${isSafe ? 'success' : 'error'} w-full" value="${isSafe ? 98 : 15}" max="100"></progress>
                                         </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm">SPF/DKIM:</span>
-                                            <span class="badge badge-${isSafe ? 'success' : 'warning'}">${isSafe ? 'Pass' : 'Fail'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card bg-base-100 shadow-xl">
-                                <div class="card-body">
-                                    <h3 class="card-title text-lg">
-                                        <i class="fas fa-chart-pie text-info mr-2"></i>
-                                        Phân tích bảo mật
-                                    </h3>
-                                    <div class="space-y-3">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm">Risk Score:</span>
-                                            <span class="badge badge-${resultClass}">${riskScore}/100</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm">Phishing Indicators:</span>
-                                            <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '0' : Math.floor(Math.random() * 5 + 3)}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm">Malicious Links:</span>
-                                            <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '0' : Math.floor(Math.random() * 3 + 1)}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm">Scan Time:</span>
-                                            <span class="text-sm font-mono">${new Date().toLocaleTimeString('vi-VN')}</span>
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-2">
+                                                <span class="font-semibold">Link Safety</span>
+                                                <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '100%' : '10%'}</span>
+                                            </div>
+                                            <progress class="progress progress-${isSafe ? 'success' : 'error'} w-full" value="${isSafe ? 100 : 10}" max="100"></progress>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="card bg-base-100 shadow-xl mb-6">
-                            <div class="card-body">
-                                <h3 class="card-title text-lg">
-                                    <i class="fas fa-chart-bar text-warning mr-2"></i>
-                                    Phân tích chi tiết
-                                </h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <div class="flex justify-between text-sm mb-2">
-                                            <span class="font-semibold">Phishing Risk</span>
-                                            <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '5%' : '85%'}</span>
-                                        </div>
-                                        <progress class="progress progress-${isSafe ? 'success' : 'error'} w-full" value="${isSafe ? 5 : 85}" max="100"></progress>
-                                    </div>
-                                    <div>
-                                        <div class="flex justify-between text-sm mb-2">
-                                            <span class="font-semibold">Sender Authenticity</span>
-                                            <span class="badge badge-${isSafe ? 'success' : 'warning'}">${isSafe ? '95%' : '25%'}</span>
-                                        </div>
-                                        <progress class="progress progress-${isSafe ? 'success' : 'warning'} w-full" value="${isSafe ? 95 : 25}" max="100"></progress>
-                                    </div>
-                                    <div>
-                                        <div class="flex justify-between text-sm mb-2">
-                                            <span class="font-semibold">Content Safety</span>
-                                            <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '98%' : '15%'}</span>
-                                        </div>
-                                        <progress class="progress progress-${isSafe ? 'success' : 'error'} w-full" value="${isSafe ? 98 : 15}" max="100"></progress>
-                                    </div>
-                                    <div>
-                                        <div class="flex justify-between text-sm mb-2">
-                                            <span class="font-semibold">Link Safety</span>
-                                            <span class="badge badge-${isSafe ? 'success' : 'error'}">${isSafe ? '100%' : '10%'}</span>
-                                        </div>
-                                        <progress class="progress progress-${isSafe ? 'success' : 'error'} w-full" value="${isSafe ? 100 : 10}" max="100"></progress>
-                                    </div>
-                                </div>
+    
+                            ${generateRecommendations(isSafe)}
+    
+                            <div class="flex flex-wrap gap-3 justify-center mt-6">
+                                <button class="btn btn-primary" onclick="scanAgain()">
+                                    <i class="fas fa-redo mr-2"></i>Quét email khác
+                                </button>
+                                <button class="btn btn-outline btn-secondary" onclick="downloadReport()">
+                                    <i class="fas fa-download mr-2"></i>Tải báo cáo
+                                </button>
+                                <button class="btn btn-outline btn-info" onclick="shareResult()">
+                                    <i class="fas fa-share mr-2"></i>Chia sẻ kết quả
+                                </button>
                             </div>
                         </div>
-
-                        ${generateRecommendations(isSafe)}
-
-                        <div class="flex flex-wrap gap-3 justify-center mt-6">
-                            <button class="btn btn-primary" onclick="scanAgain()">
-                                <i class="fas fa-redo mr-2"></i>Quét email khác
-                            </button>
-                            <button class="btn btn-outline btn-secondary" onclick="downloadReport()">
-                                <i class="fas fa-download mr-2"></i>Tải báo cáo
-                            </button>
-                            <button class="btn btn-outline btn-info" onclick="shareResult()">
-                                <i class="fas fa-share mr-2"></i>Chia sẻ kết quả
-                            </button>
-                        </div>
-                    </div>
-                `;
+                    `;
 
                 scanResults.classList.remove('hidden');
 
-                // Scroll to results
                 setTimeout(() => {
                     scanResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
@@ -611,31 +949,31 @@
             function generateRecommendations(isSafe) {
                 if (isSafe) {
                     return `
-                        <div class="alert alert-info shadow-lg">
-                            <i class="fas fa-lightbulb text-2xl"></i>
-                            <div>
-                                <h4 class="font-bold text-lg">Khuyến nghị</h4>
-                                <p class="text-sm">
-                                    Email này có vẻ an toàn. Tuy nhiên, hãy luôn cẩn thận với các liên kết 
-                                    và tệp đính kèm. Không bao giờ cung cấp mật khẩu hoặc thông tin nhạy cảm qua email.
-                                </p>
+                            <div class="alert alert-info shadow-lg">
+                                <i class="fas fa-lightbulb text-2xl"></i>
+                                <div>
+                                    <h4 class="font-bold text-lg">Khuyến nghị</h4>
+                                    <p class="text-sm">
+                                        Email này có vẻ an toàn. Tuy nhiên, hãy luôn cẩn thận với các liên kết 
+                                        và tệp đính kèm. Không bao giờ cung cấp mật khẩu hoặc thông tin nhạy cảm qua email.
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
                 } else {
                     return `
-                        <div class="alert alert-error shadow-lg">
-                            <i class="fas fa-ban text-2xl"></i>
-                            <div>
-                                <h4 class="font-bold text-lg">Cảnh báo nguy hiểm - Đây là email lừa đảo</h4>
-                                <p class="text-sm">
-                                    Email này có dấu hiệu rõ ràng của phishing. <strong>Không nhấp vào bất kỳ liên kết nào</strong>, 
-                                    không tải tệp đính kèm, và không trả lời email này. Hãy xóa email ngay lập tức 
-                                    và báo cáo cho bộ phận IT nếu bạn nhận được trong môi trường công ty.
-                                </p>
+                            <div class="alert alert-error shadow-lg">
+                                <i class="fas fa-ban text-2xl"></i>
+                                <div>
+                                    <h4 class="font-bold text-lg">Cảnh báo nguy hiểm - Đây là email lừa đảo</h4>
+                                    <p class="text-sm">
+                                        Email này có dấu hiệu rõ ràng của phishing. <strong>Không nhấp vào bất kỳ liên kết nào</strong>, 
+                                        không tải tệp đính kèm, và không trả lời email này. Hãy xóa email ngay lập tức 
+                                        và báo cáo cho bộ phận IT nếu bạn nhận được trong môi trường công ty.
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
                 }
             }
 
@@ -646,9 +984,9 @@
                 const alertDiv = document.createElement('div');
                 alertDiv.className = `alert alert-${type} temp-alert fixed top-4 right-4 w-auto max-w-md z-50 shadow-2xl`;
                 alertDiv.innerHTML = `
-                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : type === 'warning' ? 'exclamation' : 'info'}-circle"></i>
-                    <span>${message}</span>
-                `;
+                        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : type === 'warning' ? 'exclamation' : 'info'}-circle"></i>
+                        <span>${message}</span>
+                    `;
 
                 document.body.appendChild(alertDiv);
 
@@ -660,8 +998,13 @@
             // Global functions for buttons
             window.scanAgain = function () {
                 scanResults.classList.add('hidden');
-                emailContent.value = '';
-                emailContent.focus();
+                if (currentMode === 'edit') {
+                    quill.setText(''); // Clear Quill editor
+                } else {
+                    currentEmailHtml = ''; // Clear preview content
+                    updatePreview('');
+                }
+                quill.focus();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
@@ -686,5 +1029,6 @@
 </body>
 
 </html>
+
 
 {% endblock %}
