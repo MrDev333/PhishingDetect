@@ -1,3 +1,7 @@
 data/*.csv
 !data/linkdataset.txt
 !data/**/
+
+.venv/
+
+*.sqlite3/
